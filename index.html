@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Appointment Form</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <h1>Book an Appointment</h1>
+
+  <form id="appointmentForm">
+    <input type="text" name="name" placeholder="Your Name" required><br>
+    <input type="email" name="email" placeholder="Your Email" required><br>
+    <input type="text" name="phone" placeholder="Phone Number" required><br>
+    <input type="date" name="date" required><br>
+    <textarea name="reason" placeholder="Reason" required></textarea><br>
+    <button type="submit">Send Appointment</button>
+  </form>
+
+  <script>
+    document.getElementById('appointmentForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+
+      const res = await fetch('/api/appointment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      alert(result.message);
+    });
+  </script>
+
+</body>
+</html>
