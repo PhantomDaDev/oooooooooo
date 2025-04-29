@@ -1,41 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Appointment Form</title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Appointment with the School</title>
+    <style>
+      :root {
+        --primary-color: #1e90ff;
+        --background-gradient: linear-gradient(135deg, #cce5ff, #e6f0ff);
+        --form-background: #ffffff;
+        --input-border: #ccc;
+        --input-focus: var(--primary-color);
+        --text-color: #333;
+        --font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-  <h1>Book an Appointment</h1>
+      * {
+        box-sizing: border-box;
+      }
 
-  <form id="appointmentForm">
-    <input type="text" name="name" placeholder="Your Name" required><br>
-    <input type="email" name="email" placeholder="Your Email" required><br>
-    <input type="text" name="phone" placeholder="Phone Number" required><br>
-    <input type="date" name="date" required><br>
-    <textarea name="reason" placeholder="Reason" required></textarea><br>
-    <button type="submit">Send Appointment</button>
-  </form>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-family);
+        background: var(--background-gradient);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
 
-  <script>
-    document.getElementById('appointmentForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+      .form-container {
+        background-color: var(--form-background);
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 480px;
+        backdrop-filter: blur(6px);
+        transition: transform 0.3s ease;
+      }
 
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData.entries());
+      .form-container:hover {
+        transform: translateY(-4px);
+      }
 
-      const res = await fetch('/api/appointment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+      .form-container h2 {
+        margin-bottom: 1.5rem;
+        color: var(--text-color);
+        text-align: center;
+        font-size: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+        font-weight: 500;
+        font-size: 1rem;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--input-border);
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        border-color: var(--input-focus);
+        outline: none;
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .submit-button {
+        width: 100%;
+        padding: 0.85rem;
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 1rem;
+      }
+
+      .submit-button:hover {
+        background-color: #187bcd;
+      }
+
+      .form-group.confirmation {
+        margin-top: 1.5rem;
+        font-size: 1rem;
+        color: var(--text-color);
+      }
+
+      .form-group.confirmation label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+
+      .form-group.confirmation input[type="checkbox"] {
+        transform: scale(1.4);
+        margin-top: 0.2rem;
+        cursor: pointer;
+      }
+
+      @media (max-width: 500px) {
+        .form-container {
+          padding: 1.2rem;
+          border-radius: 12px;
+        }
+
+        .form-container h2 {
+          font-size: 1.3rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+          font-size: 0.95rem;
+        }
+
+        .submit-button {
+          font-size: 1rem;
+        }
+
+        .form-group.confirmation label {
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <h2>Book an Appointment</h2>
+      <form id="appointment-form">
+        <div class="form-group">
+          <label for="name">Your Name:</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Your Email:</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Your Phone Number:</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            pattern="[0-9]{10}"
+            placeholder="e.g. 0501234567"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="date">Preferred Date:</label>
+          <input type="date" id="date" name="date" required />
+        </div>
+
+        <div class="form-group">
+          <label for="meet">Whom do you want to meet?</label>
+          <select id="meet" name="meet" required>
+            <option value="">-- Select --</option>
+            <option value="Principal">Principal</option>
+            <option value="Vice Principal">Vice Principal</option>
+            <option value="Supervisor (KG)">Supervisor (KG)</option>
+            <option value="Supervisor (1-2)">Supervisor (1-2)</option>
+            <option value="Supervisor (3-5)">Supervisor (3-5)</option>
+            <option value="Supervisor (6-8)">Supervisor (6-8)</option>
+            <option value="Supervisor (9-12)">Supervisor (9-12)</option>
+            <option value="Teacher">Teacher</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="teacher-field" style="display: none;">
+          <label for="teacher-name">Which Teacher?</label>
+          <input type="text" id="teacher-name" name="teacherName" />
+        </div>
+
+        <div class="form-group">
+          <label for="reason">Reason for Appointment:</label>
+          <textarea id="reason" name="reason" required></textarea>
+        </div>
+
+        <div class="form-group confirmation">
+          <label for="confirm">
+            <input type="checkbox" id="confirm" required />
+            <span>
+              I understand that this is only an appointment request and will be
+              finalized by confirmation call/email from the school.
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="submit-button">Send Request</button>
+      </form>
+    </div>
+
+    <script>
+      const meetSelect = document.getElementById('meet');
+      const teacherField = document.getElementById('teacher-field');
+
+      meetSelect.addEventListener('change', function () {
+        if (this.value === 'Teacher') {
+          teacherField.style.display = 'block';
+          document.getElementById('teacher-name').required = true;
+        } else {
+          teacherField.style.display = 'none';
+          document.getElementById('teacher-name').required = false;
+        }
       });
 
-      const result = await res.json();
-      alert(result.message);
-    });
-  </script>
+      document.getElementById('appointment-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
 
-</body>
+        const res = await fetch('/api/appointment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        alert(result.message);
+      });
+    </script>
+  </body>
 </html>
