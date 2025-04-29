@@ -1,5 +1,3 @@
-// pages/api/appointment.js (for Vercel)
-
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -13,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     await resend.emails.send({
-      from: 'appointments@yourdomain.com', // ✅ must be verified in Resend
+      from: 'appointments@yourdomain.com', // Must be verified in Resend
       to: 'shahaanikhlas06@gmail.com',
       subject: 'New Appointment Request',
       html: `
