@@ -195,41 +195,57 @@
     </div>
 
         <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const personSelect = document.getElementById("personToMeet");
-        const teacherField = document.getElementById("teacher-field");
-        const teacherInput = document.getElementById("teacherName");
-        const form = document.getElementById("appointment-form");
+  document.addEventListener("DOMContentLoaded", () => {
+    const personSelect = document.getElementById("personToMeet");
+    const teacherField = document.getElementById("teacher-field");
+    const teacherInput = document.getElementById("teacherName");
+    const form = document.getElementById("appointment-form");
 
-        personSelect.addEventListener("change", () => {
-          if (personSelect.value === "Teacher") {
-            teacherField.style.display = "block";
-            teacherInput.required = true;
-          } else {
-            teacherField.style.display = "none";
-            teacherInput.required = false;
-            teacherInput.value = "";
-          }
+    personSelect.addEventListener("change", () => {
+      if (personSelect.value === "Teacher") {
+        teacherField.style.display = "block";
+        teacherInput.required = true;
+      } else {
+        teacherField.style.display = "none";
+        teacherInput.required = false;
+        teacherInput.value = "";
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Sending...';
+
+      try {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Convert confirmation checkbox value to boolean
+        data.confirmation = data.confirmation === 'on';
+
+        const res = await fetch("/api/appointment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
         });
 
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const data = Object.fromEntries(new FormData(form).entries());
-          try {
-            const res = await fetch("/api/appointment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data)
-            });
-            const json = await res.json();
-            alert(json.message);
-          } catch (err) {
-            console.error(err);
-            alert("Something went wrong. Please try again.");
-          }
-        });
-      });
-    </script>
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Request failed');
+
+        alert(json.message);
+        form.reset(); // Clear form on success
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Something went wrong. Please try again.");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Send Request';
+      }
+    });
+  });
+</script>
 
   </body>
 </html>
