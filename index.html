@@ -1,3 +1,5 @@
+<!-- pray to God that this works --->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -85,6 +87,10 @@
         margin-top: 1rem;
       }
       .submit-button:hover { background-color: #187bcd; }
+      .submit-button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
 
       .form-group.confirmation {
         margin-top: 1.5rem;
@@ -112,11 +118,7 @@
   <body>
     <div class="form-container">
       <h2>Book an Appointment</h2>
-      <form
-        id="appointment-form"
-        method="POST"
-        action="/api/appointment"
-      >
+      <form id="appointment-form">
         <div class="form-group">
           <label for="name">Your Name:</label>
           <input type="text" id="name" name="name" required />
@@ -194,59 +196,69 @@
       </form>
     </div>
 
-        <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const personSelect = document.getElementById("personToMeet");
-    const teacherField = document.getElementById("teacher-field");
-    const teacherInput = document.getElementById("teacherName");
-    const form = document.getElementById("appointment-form");
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const personSelect = document.getElementById("personToMeet");
+        const teacherField = document.getElementById("teacher-field");
+        const teacherInput = document.getElementById("teacherName");
+        const form = document.getElementById("appointment-form");
 
-    personSelect.addEventListener("change", () => {
-      if (personSelect.value === "Teacher") {
-        teacherField.style.display = "block";
-        teacherInput.required = true;
-      } else {
-        teacherField.style.display = "none";
-        teacherInput.required = false;
-        teacherInput.value = "";
-      }
-    });
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const submitButton = e.target.querySelector('button[type="submit"]');
-      submitButton.disabled = true;
-      submitButton.textContent = 'Sending...';
-
-      try {
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        
-        // Convert confirmation checkbox value to boolean
-        data.confirmation = data.confirmation === 'on';
-
-        const res = await fetch("/api/appointment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
+        // Toggle teacher name field
+        personSelect.addEventListener("change", () => {
+          if (personSelect.value === "Teacher") {
+            teacherField.style.display = "block";
+            teacherInput.required = true;
+          } else {
+            teacherField.style.display = "none";
+            teacherInput.required = false;
+            teacherInput.value = "";
+          }
         });
 
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Request failed');
+        // Form submission handler
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const submitButton = e.target.querySelector('button[type="submit"]');
+          submitButton.disabled = true;
+          submitButton.textContent = 'Sending...';
 
-        alert(json.message);
-        form.reset(); // Clear form on success
-      } catch (err) {
-        console.error(err);
-        alert(err.message || "Something went wrong. Please try again.");
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Send Request';
-      }
-    });
-  });
-</script>
+          try {
+            const formData = new FormData(form);
+            const data = {
+              name: formData.get('name'),
+              email: formData.get('email'),
+              phone: formData.get('phone'),
+              date: formData.get('date'),
+              reason: formData.get('reason'),
+              personToMeet: formData.get('personToMeet'),
+              teacherName: formData.get('teacherName') || '',
+              confirmation: formData.get('confirmation') === 'on'
+            };
 
+            const response = await fetch("/api/appointment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || 'Request failed');
+            }
+
+            const result = await response.json();
+            alert(result.message);
+            form.reset();
+          } catch (error) {
+            console.error('Submission error:', error);
+            alert(error.message || "Something went wrong. Please try again.");
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Send Request';
+          }
+        });
+      });
+    </script>
   </body>
 </html>
 
