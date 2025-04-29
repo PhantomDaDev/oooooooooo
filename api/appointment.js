@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // Handle preflight request
@@ -17,29 +17,40 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+  // Parse JSON body directly from req.body
   let data;
   try {
-    data = JSON.parse(req.body);
+    data = req.body;
+    
+    // If body is a string, parse it (some environments pass stringified JSON)
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
   } catch (error) {
-    return res.status(400).json({ message: 'Invalid JSON body' });
+    console.error('Error parsing request body:', error);
+    return res.status(400).json({ message: 'Invalid request body' });
   }
 
   const { name, email, phone, date, reason, personToMeet, teacherName } = data;
 
   try {
     await resend.emails.send({
-      from: 'appointments@yourdomain.com', // Make sure this is verified in Resend
+      from: 'appointments@yourdomain.com',
       to: 'shahaanikhlas06@gmail.com',
       subject: 'New Appointment Request',
       html: `
         <h2>Appointment Request</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        <p><strong>Date:</strong> ${date}</p>
-        <p><strong>Reason:</strong> ${reason}</p>
-        <p><strong>Person to Meet:</strong> ${personToMeet}</p>
-        ${personToMeet === 'Teacher' ? `<p><strong>Teacher Name:</strong> ${teacherName}</p>` : ''}
+        ${Object.entries({
+          Name: name,
+          Email: email,
+          Phone: phone,
+          Date: date,
+          Reason: reason,
+          'Person to Meet': personToMeet,
+          ...(personToMeet === 'Teacher' && { 'Teacher Name': teacherName })
+        })
+        .map(([key, value]) => `<p><strong>${key}:</strong> ${value || 'Not provided'}</p>`)
+        .join('')}
       `,
     });
 
@@ -51,4 +62,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
