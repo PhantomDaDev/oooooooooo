@@ -194,39 +194,43 @@
       </form>
     </div>
 
-    <script>
-      const personSelect = document.getElementById("personToMeet");
-      const teacherField = document.getElementById("teacher-field");
-      const teacherInput = document.getElementById("teacherName");
+        <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const personSelect = document.getElementById("personToMeet");
+        const teacherField = document.getElementById("teacher-field");
+        const teacherInput = document.getElementById("teacherName");
+        const form = document.getElementById("appointment-form");
 
-      personSelect.addEventListener("change", () => {
-        if (personSelect.value === "Teacher") {
-          teacherField.style.display = "block";
-          teacherInput.required = true;
-        } else {
-          teacherField.style.display = "none";
-          teacherInput.required = false;
-          teacherInput.value = "";
-        }
-      });
-
-      // AJAX submit (optional—form has a normal POST fallback)
-      document
-        .getElementById("appointment-form")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const data = Object.fromEntries(
-            new FormData(e.target).entries()
-          );
-          const res = await fetch("/api/appointment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-          });
-          const json = await res.json();
-          alert(json.message);
+        personSelect.addEventListener("change", () => {
+          if (personSelect.value === "Teacher") {
+            teacherField.style.display = "block";
+            teacherInput.required = true;
+          } else {
+            teacherField.style.display = "none";
+            teacherInput.required = false;
+            teacherInput.value = "";
+          }
         });
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const data = Object.fromEntries(new FormData(form).entries());
+          try {
+            const res = await fetch("/api/appointment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            alert(json.message);
+          } catch (err) {
+            console.error(err);
+            alert("Something went wrong. Please try again.");
+          }
+        });
+      });
     </script>
+
   </body>
 </html>
 
